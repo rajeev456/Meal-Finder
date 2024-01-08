@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Detail</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <div id="meal-detail"></div>
+    </div>
+
+    <script>
+        const mealDetailContainer = document.getElementById('meal-detail');
+        const queryString = window.location.search;
+        const urlParams = new URLSearchParams(queryString);
+        const mealId = urlParams.get('id');
+
+        fetch(`https://www.themealdb.com/api/json/v1/1/lookup.php?i=${mealId}`)
+            .then(response => response.json())
+            .then(data => displayMealDetail(data.meals[0]))
+            .catch(err => console.error(err));
+
+        function displayMealDetail(meal) {
+            mealDetailContainer.innerHTML = `
+                <div class="card mb-3">
+                    <img src="${meal.strMealThumb}" class="card-img-top" alt="${meal.strMeal}">
+                    <div class="card-body">
+                        <h5 class="card-title">${meal.strMeal}</h5>
+                        <p class="card-text">${meal.strInstructions}</p>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

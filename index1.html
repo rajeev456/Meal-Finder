@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meal Finder App</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .card-image-top {
+            object-fit: cover;
+            height: 200px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Meal Finder</h1>
+        <input type="text" id="search-input" class="form-control" placeholder="Search for a meal..." oninput="searchMeal()">
+        <div id="meals-container" class="row mt-4">
+            <!-- Search results will appear here -->
+        </div>
+    </div>
+
+    <script>
+        const searchInput = document.getElementById('search-input');
+        const mealsContainer = document.getElementById('meals-container');
+        let favoriteMeals = JSON.parse(localStorage.getItem('favoriteMeals')) || [];
+
+        function searchMeal() {
+            const searchTerm = searchInput.value;
+            if (!searchTerm.trim()) {
+                mealsContainer.innerHTML = '';
+                return;
+            }
+            fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${searchTerm}`)
+                .then(response => response.json())
+                .then(data => displayMeals(data.meals))
+                .catch(err => console.error(err));
+        }
+
+        function displayMeals(meals) {
+            if (!meals) {
+                mealsContainer.innerHTML = '<p class="text-center w-100">No meals found. Try another search.</p>';
+                return;
+            }
+            mealsContainer.innerHTML = meals.map(meal => `
+                <div class="col-md-4">
+                    <div class="card">
+                        <img src="${meal.strMealThumb}" class="card-img-top card-image-top" alt="${meal.strMeal}">
+                        <div class="card-body">
+                            <h5 class="card-title">${meal.strMeal}</h5>
+                            <button onclick="addToFavorites('${meal.idMeal}')" class="btn btn-primary ${favoriteMeals.includes(meal.idMeal) ? 'active' : ''}">
+                                ${favoriteMeals.includes(meal.idMeal) ? 'Favorited' : 'Add to Favorites'}
+                            </button>
+                            <a href="meal-detail.html?id=${meal.idMeal}" class="btn btn-secondary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addToFavorites(mealId) {
+            if (favoriteMeals.includes(mealId)) {
+                // Remove from favorites
+                favoriteMeals = favoriteMeals.filter(id => id !== mealId);
+            } else {
+                // Add to favorites
+                favoriteMeals.push(mealId);
+            }
+            localStorage.setItem('favoriteMeals', JSON.stringify(favoriteMeals));
+            searchMeal(); // Update the display
+        }
+    </script>
+</body>
+</html>
